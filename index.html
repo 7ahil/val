@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Valentine 💖</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3, #fda4af);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Prevent scrollbars during fireworks */
+}
+
+.container {
+  text-align: center;
+  padding: 40px;
+  z-index: 10; /* Ensure text stays above fireworks */
+  position: relative;
+}
+
+h1 {
+  font-size: 3.5rem;
+  color: #e11d48;
+}
+
+h2 {
+  font-size: 2.2rem;
+  color: #be123c;
+}
+
+.buttons {
+  margin: 40px 0;
+  position: relative;
+}
+
+button {
+  font-size: 1.5rem;
+  padding: 15px 30px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  margin: 10px;
+  transition: transform 0.3s ease;
+  z-index: 20; /* Ensure buttons are above fireworks */
+  position: relative;
+}
+
+.yes {
+  background: #ec4899;
+  color: white;
+}
+
+.yes:hover {
+  transform: scale(1.05);
+  background: #db2777;
+}
+
+.no {
+  background: rgb(201, 57, 117);
+  border: 3px solid #999;
+  position: absolute; /* Changed from fixed */
+  transition: all 0.4s ease;
+  color: azure;
+}
+
+.no:hover {
+  transform: scale(0.95);
+}
+
+.quote {
+  font-style: italic;
+  color: #9f1239;
+  z-index: 10;
+  position: relative;
+}
+
+#fireworks {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1; /* Behind the content */
+}
+</style>
+
+<body>
+<!-- Canvas for fireworks -->
+<canvas id="fireworks"></canvas>
+
+<div class="container">
+  <h1>💖 HI 💖</h1>
+  <h2>Will you be my Valentine?</h2>
+
+  <div class="buttons">
+    <button class="yes" id="yesBtn">Yes! 💕</button>
+    <button class="no" id="noBtn">No escape 😈</button>
+  </div>
+
+  <p class="quote">"Every moment with you feels like a dream come true..."</p>
+</div>
+
+<script>
+  const noBtn = document.getElementById("noBtn");
+  const yesBtn = document.getElementById("yesBtn");
+  const canvas = document.getElementById("fireworks");
+  const ctx = canvas.getContext("2d");
+
+  const texts = [
+    "Nope 🙅‍♀️",
+    "Not a chance 😤",
+    "Nice try 😏",
+    "Really? 😂",
+    "No escape 😈",
+    "You are testing my patience 😑",
+    "Keep trying 🤡"
+  ];
+
+  let count = 0;
+
+  noBtn.addEventListener("click", () => {
+    // Change text in a loop
+    noBtn.textContent = texts[count % texts.length];
+    count++;
+
+    // Random position within button container
+    const container = noBtn.parentElement;
+    const containerRect = container.getBoundingClientRect();
+    
+    const maxX = containerRect.width - noBtn.offsetWidth;
+    const maxY = containerRect.height - noBtn.offsetHeight;
+
+    const x = Math.random() * maxX;
+    const y = Math.random() * maxY;
+
+    noBtn.style.left = `${x}px`;
+    noBtn.style.top = `${y}px`;
+  });
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  function createFirework() {
+    const particles = [];
+    const particleCount = 150; // Increased for better effect
+
+    // Create particles
+    for (let i = 0; i < particleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 2;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      
+      particles.push({
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        vx: vx,
+        vy: vy,
+        alpha: 1,
+        color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+        size: Math.random() * 3 + 2,
+        gravity: 0.05,
+        decay: Math.random() * 0.02 + 0.01
+      });
+    }
+
+    return particles;
+  }
+
+  function animateFireworks(particles) {
+    let animationId;
+    
+    function animate() {
+      // Clear with a slight fade effect for trailing particles
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      let allDead = true;
+      
+      particles.forEach(p => {
+        // Update particle position
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += p.gravity; // Add gravity effect
+        p.alpha -= p.decay;
+        
+        if (p.alpha > 0) {
+          allDead = false;
+          
+          // Draw particle
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+      
+      ctx.globalAlpha = 1;
+      
+      if (!allDead) {
+        animationId = requestAnimationFrame(animate);
+      } else {
+        // Clear canvas completely when done
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        cancelAnimationFrame(animationId);
+      }
+    }
+    
+    animate();
+  }
+
+  yesBtn.addEventListener("click", () => {
+    // Create multiple firework bursts
+    const particles = createFirework();
+    
+    // Start animation
+    animateFireworks(particles);
+    
+    // Create additional bursts for more dramatic effect
+    setTimeout(() => {
+      const particles2 = createFirework();
+      animateFireworks(particles2);
+    }, 300);
+    
+    setTimeout(() => {
+      const particles3 = createFirework();
+      animateFireworks(particles3);
+    }, 600);
+    
+    // Redirect after fireworks
+    setTimeout(() => {
+      window.location.href = "v2.html";
+    }, 2000);
+  });
+
+  // Prevent right-click on canvas
+  canvas.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+
+</body>
+</html>
